@@ -9,29 +9,25 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6 # Обновлено с v4
 
-    # JDK 17 нужен для установки Android SDK
     - name: Set up JDK 17 (for SDK)
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5 # Обновлено с v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    # Исправленный шаг: обновлено до v4 и явно указан platform-tools
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v4
+      uses: android-actions/setup-android@v4 # Оставляем v4, это актуальная версия[reference:9]
       with:
         packages: 'platform-tools'
 
-    # Установка NDK для нативной библиотеки ncnn
     - name: Install NDK r21
       run: |
         yes | sdkmanager --install "ndk;21.4.7075529"
 
-    # Переключаемся на JDK 11 для сборки Gradle (требование старого проекта)
     - name: Set up JDK 11 (for Build)
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5 # Обновлено с v4
       with:
         java-version: '11'
         distribution: 'temurin'
@@ -45,7 +41,7 @@ jobs:
       working-directory: ./Camera2Raw
 
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6 # Обновлено с v4
       with:
         name: SID-NCNN-Debug-APK
         path: ./Camera2Raw/app/build/outputs/apk/debug/*.apk
