@@ -11,22 +11,25 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 1. Устанавливаем JDK 17 ТОЛЬКО для настройки Android SDK
+    # JDK 17 нужен для установки Android SDK
     - name: Set up JDK 17 (for SDK)
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
+    # Исправленный шаг: обновлено до v4 и явно указан platform-tools
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v4
+      with:
+        packages: 'platform-tools'
 
-    # 2. Устанавливаем NDK, пока активен JDK 17
+    # Установка NDK для нативной библиотеки ncnn
     - name: Install NDK r21
       run: |
         yes | sdkmanager --install "ndk;21.4.7075529"
 
-    # 3. Переключаемся на JDK 11 для сборки Gradle
+    # Переключаемся на JDK 11 для сборки Gradle (требование старого проекта)
     - name: Set up JDK 11 (for Build)
       uses: actions/setup-java@v4
       with:
