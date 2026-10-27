@@ -1,7 +1,7 @@
 name: Build SID-NCNN APK
 
 on:
-  workflow_dispatch: # Позволяет запускать сборку вручную кнопкой
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,44 +11,38 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up JDK 11
+    # 1. Устанавливаем JDK 17 ТОЛЬКО для настройки Android SDK
+    - name: Set up JDK 17 (for SDK)
       uses: actions/setup-java@v4
       with:
-        java-version: '11' # Для Gradle 6.7.1 и AGP 4.2.2 подходит JDK 11
+        java-version: '17'
         distribution: 'temurin'
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # Явная установка NDK r21, так как проект старый и требует эту версию для ncnn
+    # 2. Устанавливаем NDK, пока активен JDK 17
     - name: Install NDK r21
       run: |
         yes | sdkmanager --install "ndk;21.4.7075529"
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
+    # 3. Переключаемся на JDK 11 для сборки Gradle
+    - name: Set up JDK 11 (for Build)
+      uses: actions/setup-java@v4
       with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-
-    # Проверка, что нужные файлы на месте (поможет при отладке)
-    - name: Debug - List files in Camera2Raw
-      run: ls -la ./Camera2Raw
+        java-version: '11'
+        distribution: 'temurin'
 
     - name: Grant execute permission for gradlew
-      run: chmod +x ./Camera2Raw/gradlew # Указываем полный путь к gradlew
+      run: chmod +x gradlew
+      working-directory: ./Camera2Raw
 
     - name: Build with Gradle
-      # Запускаем сборку из корня, но указываем путь к gradlew
-      run: ./Camera2Raw/gradlew assembleDebug --stacktrace
+      run: ./gradlew assembleDebug --stacktrace
+      working-directory: ./Camera2Raw
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: SID-NCNN-Debug-APK
-        # Путь к готовому APK-файлу внутри проекта
         path: ./Camera2Raw/app/build/outputs/apk/debug/*.apk
